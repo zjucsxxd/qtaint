@@ -28,6 +28,9 @@ THE SOFTWARE.
 #include <QLabel>
 #include <QBoxLayout>
 #include <QCheckBox>
+#include <QVector>
+
+#include <opencv2/highgui/highgui.hpp>
 
 MainWindow::MainWindow(QWidget *parent)
 : QMainWindow(parent),
@@ -46,19 +49,54 @@ MainWindow::MainWindow(QWidget *parent)
 
   QWidget* mainwidget = new QWidget(this);
   mainwidget->setLayout(layout);
-
   setCentralWidget(mainwidget);
+
+  image = cv::imread("examples/dice.png", -1); // negative to load image as-is, with transparency
 
   // must set central widget max size here, not QMainWindow's
   label->setMaximumSize(800,600);
 }
 
+// move elsewhere
+QVector<QRgb> grayscale_colortable()
+{
+  QVector<QRgb> result(256);
+  for (int i = 0; i < 256; ++i)
+     result[i] = qRgb(i, i, i);
+
+  return result;
+}
+
+void MainWindow::refresh()
+{
+  switch(image.type())
+  {
+    case CV_8UC4:
+      displayed = QPixmap::fromImage(QImage(image.data, image.cols, image.rows, image.step, QImage::Format_ARGB32));
+      break;
+    case CV_8UC3:
+      displayed = QPixmap::fromImage(QImage(image.data, image.cols, image.rows, image.step, QImage::Format_RGB888).rgbSwapped());
+      break;
+    case CV_8UC1:
+    {
+      static QVector<QRgb> color_table = grayscale_colortable();
+      QImage temp(image.data, image.cols, image.rows, image.step, QImage::Format_Indexed8);
+      temp.setColorTable(color_table);
+      displayed = QPixmap::fromImage(temp);
+      break;
+    }
+    default:
+      qWarning() << "Image type not handled" << image.type();
+      break;
+  }
+  label->setPixmap((displayed));
+}
+
 void MainWindow::loadImage(const char* filename)
 {
-  original.load(filename);
-  displayed = original;
-  label->setPixmap(QPixmap::fromImage(displayed, Qt::MonoOnly));
-  qDebug() << "Image size in bytes: " << original.byteCount();
+  image = cv::imread(filename, -1); // -1 = as-is, keeping transparency
+  qDebug() << "Image size in bytes: " << image.size().area();
+  refresh();
 }
 
 void MainWindow::toggleGrayscale()
@@ -66,13 +104,13 @@ void MainWindow::toggleGrayscale()
   if(gray)
   {
     gray = false;
-    displayed = original;
+    //displayed = original;
   }
   else
   {
     gray = true;
-    displayed = original.convertToFormat(QImage::Format_MonoLSB);
+    //displayed = original.convertToFormat(QImage::Format_MonoLSB);
   }
-  label->setPixmap(QPixmap::fromImage(displayed));
-  label->repaint();
+  //label->setPixmap(QPixmap::fromImage(displayed));
+  //label->repaint();
 }

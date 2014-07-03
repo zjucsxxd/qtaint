@@ -25,13 +25,20 @@ THE SOFTWARE.
 #include "mainwindow.h"
 
 #include <QApplication>
+#include <QDebug>
 
 int main(int argc, char *argv[])
+try
 {
   QApplication app(argc, argv);
 
   MainWindow mw;
-  mw.loadImage("/usr/share/wallpapers/Grass/contents/images/1920x1080.jpg");
+  //mw.loadImage("/usr/share/wallpapers/Grass/contents/images/1920x1080.jpg");
+  mw.refresh();
   mw.show();
   return app.exec();
+}
+catch(const cv::Exception& e)
+{
+  qDebug() << "OpenCV Exception: " << e.what();
 }

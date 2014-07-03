@@ -26,6 +26,9 @@ THE SOFTWARE.
 #define QTAINT_MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QImage>
+
+#include <opencv2/core/core.hpp>
 
 class QLabel;
 class QCheckBox;
@@ -40,6 +43,7 @@ public:
   void loadImage(const char* filename);
 
 public slots:
+  void refresh(); // reload image into label
   void toggleGrayscale();
 
 private:
@@ -48,8 +52,8 @@ private:
   QCheckBox* grayscaleCheckBox;
 
   // data
-  QImage displayed;
-  QImage original;
+  cv::Mat image;
+  QPixmap displayed;
   bool gray;
 };
 
