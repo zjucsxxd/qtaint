@@ -28,6 +28,7 @@ THE SOFTWARE.
 #include <QMainWindow>
 
 class QLabel;
+class QCheckBox;
 
 class MainWindow : public QMainWindow
 {
@@ -38,12 +39,18 @@ public:
 
   void loadImage(const char* filename);
 
+public slots:
+  void toggleGrayscale();
+
 private:
   // widgets and layouts
   QLabel* label;
+  QCheckBox* grayscaleCheckBox;
 
   // data
-  QImage image;
+  QImage displayed;
+  QImage original;
+  bool gray;
 };
 
 #endif // QTAINT_MAINWINDOW_H

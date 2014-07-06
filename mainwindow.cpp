@@ -27,12 +27,27 @@ THE SOFTWARE.
 #include <QDebug>
 #include <QLabel>
 #include <QBoxLayout>
+#include <QCheckBox>
 
 MainWindow::MainWindow(QWidget *parent)
-: QMainWindow(parent)
+: QMainWindow(parent),
+  gray(false)
 {
   label = new QLabel(this);
-  setCentralWidget(label);
+  grayscaleCheckBox = new QCheckBox("Grayscale", this);
+
+  connect(grayscaleCheckBox, &QCheckBox::stateChanged,
+          this, &MainWindow::toggleGrayscale);
+
+
+  QBoxLayout* layout = new QBoxLayout(QBoxLayout::TopToBottom, this);
+  layout->addWidget(label);
+  layout->addWidget(grayscaleCheckBox);
+
+  QWidget* mainwidget = new QWidget(this);
+  mainwidget->setLayout(layout);
+
+  setCentralWidget(mainwidget);
 
   // must set central widget max size here, not QMainWindow's
   label->setMaximumSize(800,600);
@@ -40,7 +55,24 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::loadImage(const char* filename)
 {
-  image.load(filename);
-  label->setPixmap(QPixmap::fromImage(image));
-  qDebug() << "Image size in bytes: " << image.byteCount();
+  original.load(filename);
+  displayed = original;
+  label->setPixmap(QPixmap::fromImage(displayed, Qt::MonoOnly));
+  qDebug() << "Image size in bytes: " << original.byteCount();
+}
+
+void MainWindow::toggleGrayscale()
+{
+  if(gray)
+  {
+    gray = false;
+    displayed = original;
+  }
+  else
+  {
+    gray = true;
+    displayed = original.convertToFormat(QImage::Format_MonoLSB);
+  }
+  label->setPixmap(QPixmap::fromImage(displayed));
+  label->repaint();
 }
