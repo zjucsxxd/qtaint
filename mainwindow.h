@@ -52,6 +52,7 @@ private:
   QCheckBox* grayscaleCheckBox;
 
   // data
+  cv::Mat original;
   cv::Mat image;
   QPixmap displayed;
   bool gray;

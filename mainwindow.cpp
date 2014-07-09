@@ -31,12 +31,14 @@ THE SOFTWARE.
 #include <QVector>
 
 #include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 MainWindow::MainWindow(QWidget *parent)
 : QMainWindow(parent),
   gray(false)
 {
   label = new QLabel(this);
+  label->setStyleSheet("background-color: white;");
   grayscaleCheckBox = new QCheckBox("Grayscale", this);
 
   connect(grayscaleCheckBox, &QCheckBox::stateChanged,
@@ -51,7 +53,8 @@ MainWindow::MainWindow(QWidget *parent)
   mainwidget->setLayout(layout);
   setCentralWidget(mainwidget);
 
-  image = cv::imread("examples/dice.png", -1); // negative to load image as-is, with transparency
+  original = cv::imread("examples/dice.png", CV_LOAD_IMAGE_UNCHANGED);
+  original.copyTo(image);
 
   // must set central widget max size here, not QMainWindow's
   label->setMaximumSize(800,600);
@@ -94,7 +97,7 @@ void MainWindow::refresh()
 
 void MainWindow::loadImage(const char* filename)
 {
-  image = cv::imread(filename, -1); // -1 = as-is, keeping transparency
+  image = cv::imread(filename, CV_LOAD_IMAGE_UNCHANGED);
   qDebug() << "Image size in bytes: " << image.size().area();
   refresh();
 }
@@ -104,13 +107,16 @@ void MainWindow::toggleGrayscale()
   if(gray)
   {
     gray = false;
-    //displayed = original;
+   original.copyTo(image);
   }
   else
   {
     gray = true;
-    //displayed = original.convertToFormat(QImage::Format_MonoLSB);
+    static cv::Mat temp;
+    cv::cvtColor(image, temp, CV_BGRA2GRAY);
+    static int from_to[] = {0,0, 0,1, 0,2};
+    // copy grayscale channel to all three channels of the image
+    cv::mixChannels(&temp, 1, &image, 1, from_to, 3);
   }
-  //label->setPixmap(QPixmap::fromImage(displayed));
-  //label->repaint();
+  refresh();
 }

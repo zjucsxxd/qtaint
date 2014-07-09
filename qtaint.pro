@@ -17,7 +17,8 @@ OTHER_FILES += LICENSE \
 
 # OpenCV libs
 LIBS += -lopencv_core \
-        -lopencv_highgui
+        -lopencv_highgui \
+        -lopencv_imgproc
 
 SOURCES += main.cpp\
         mainwindow.cpp
